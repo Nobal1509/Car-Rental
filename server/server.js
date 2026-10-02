@@ -10,16 +10,31 @@ import bookingRouter from "./routes/bookingRoutes.js";
 // Initialize Express App
 const app = express()
 
-// Connect Database
-connectDB().catch((err) => console.error("Initial DB connection error:", err.message));
+const allowedOrigins = [
+    /^https?:\/\/localhost:\d+$/,
+    /^https:\/\/.*\.vercel\.app$/
+];
 
-// Middleware - Enable CORS for all origins with credentials & preflight support
-app.use(cors({
-    origin: true,
+const corsOptions = {
+    origin: (origin, callback) => {
+        const isAllowed = !origin || allowedOrigins.some((pattern) => pattern.test(origin));
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            callback(null, false);
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+// Connect Database
+connectDB().catch((err) => console.error("Initial DB connection error:", err.message));
+
+// CORS must be applied before routes and explicitly handle preflight requests.
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 

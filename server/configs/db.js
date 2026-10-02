@@ -6,9 +6,18 @@ const connectDB = async () => {
         return;
     }
 
-    const uri = process.env.MONGODB_URI;
+    let uri = process.env.MONGODB_URI?.trim();
+    if (uri && ((uri.startsWith('"') && uri.endsWith('"')) || (uri.startsWith("'") && uri.endsWith("'")))) {
+        uri = uri.slice(1, -1).trim();
+    }
+
     if (!uri || uri.includes("Enter your mongoDB URI")) {
         console.error("MONGODB_URI is not configured in .env / environment variables");
+        return;
+    }
+
+    if (!/^mongodb(?:\+srv)?:\/\//.test(uri)) {
+        console.error("MONGODB_URI must start with mongodb:// or mongodb+srv://; check the Vercel environment variable value");
         return;
     }
 
