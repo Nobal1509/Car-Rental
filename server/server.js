@@ -34,7 +34,7 @@ connectDB().catch((err) => console.error("Initial DB connection error:", err.mes
 
 // CORS must be applied before routes and explicitly handle preflight requests.
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options('/{*splat}', cors(corsOptions));
 
 app.use(express.json());
 
