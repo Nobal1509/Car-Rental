@@ -129,10 +129,69 @@ cd server
 npm start
 ```
 
+## Docker Deployment (Single Container)
+
+The root `Dockerfile` uses a multi-stage build:
+1. **Frontend stage:** Builds the Vite + React frontend into static assets in `/app/client/dist`.
+2. **Backend stage:** Prepares the Express server in `/app/server`, copies the static frontend assets, and serves both the API endpoints (`/api/...`) and the frontend SPA (`index.html`) on a single port.
+
+### Option A: Local Testing with Docker Compose
+
+1. Ensure `server/.env` exists with your MongoDB and ImageKit credentials.
+2. From the project root, run:
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. To stop the container:
+
+   ```bash
+   docker compose down
+   ```
+
+---
+
+## Deploying on Render (Step-by-Step)
+
+You can deploy the full-stack container on Render in two ways:
+
+### Method 1: Using Render Dashboard (Recommended)
+
+1. **Push your code to GitHub / GitLab**.
+2. Go to your [Render Dashboard](https://dashboard.render.com/) and click **New +** -> **Web Service**.
+3. Select **Build and deploy from a Git repository** and connect your repository.
+4. In the service settings:
+   - **Name:** `car-rental` (or your preferred name)
+   - **Language / Runtime:** `Docker`
+   - **Region:** Choose the region closest to you
+   - **Branch:** `main`
+   - **Dockerfile Path:** `Dockerfile` (default)
+   - **Docker Build Context:** `.` (default)
+   - **Instance Type:** `Free` (or any paid instance)
+   - **Health Check Path:** `/api/health`
+5. Under **Environment Variables**, add the following:
+   - `NODE_ENV` = `production`
+   - `MONGODB_URI` = `mongodb+srv://<username>:<password>@cluster.mongodb.net/...`
+   - `JWT_SECRET` = `<your_jwt_secret>`
+   - `IMAGEKIT_PUBLIC_KEY` = `<your_imagekit_public_key>`
+   - `IMAGEKIT_PRIVATE_KEY` = `<your_imagekit_private_key>`
+   - `IMAGEKIT_URL_ENDPOINT` = `https://ik.imagekit.io/<your_id>`
+   *(Note: Render automatically injects `PORT`. The server is configured to bind to `0.0.0.0:$PORT`.)*
+6. Click **Deploy Web Service**.
+
+### Method 2: Using Render Blueprint (`render.yaml`)
+
+1. Push this repository (which includes [`render.yaml`](render.yaml)) to GitHub.
+2. In Render, click **New +** -> **Blueprint**.
+3. Connect your repository.
+4. Fill in the prompted secret environment variables (`MONGODB_URI`, ImageKit credentials).
+5. Click **Apply**. Render will automatically build and deploy both frontend and backend from the single Dockerfile!
+
 ## Common notes
 
-- The frontend calls the backend through `VITE_BASE_URL`.
+- For separate local development, the frontend calls the backend through
+  `VITE_BASE_URL`.
 - The backend uses MongoDB for all car, user, and booking data.
 - Image uploads are handled through ImageKit.
-
-If you want, I can also add a short section for troubleshooting common startup errors such as MongoDB connection issues or CORS problems.

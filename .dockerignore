@@ -1,0 +1,16 @@
+.git
+.gitignore
+.dockerignore
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+!.env.example
+**/npm-debug.log*
+**/.DS_Store
+*.md
+compose.yaml
+docker-compose.yml
+render.yaml
+.vscode
+.idea
